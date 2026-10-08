@@ -7,7 +7,7 @@ type StatsGamePdfSheetProps = {
   logoUrl: string;
 };
 
-type Tone = "blue" | "red" | "warn" | "pass-progressive" | "pass-neutral" | "pass-lost";
+type Tone = "blue" | "red" | "strong-red" | "warn" | "pass-progressive" | "pass-neutral" | "pass-lost";
 
 function pct(value: number, total: number): number {
   return total > 0 ? Math.round((value / total) * 100) : 0;
@@ -30,40 +30,6 @@ function StatTiles({
         </li>
       ))}
     </ul>
-  );
-}
-
-function RateBar({
-  label,
-  value,
-  note,
-  segments,
-}: {
-  label: string;
-  value: number;
-  note: string;
-  segments: { value: number; tone: "warn" | "blue" }[];
-}) {
-  const total = segments.reduce((sum, segment) => sum + segment.value, 0);
-  return (
-    <div className="spdf-rate">
-      <div className="spdf-rate__head">
-        <span className="spdf-rate__label">{label}</span>
-        <span className="spdf-rate__value">{value}%</span>
-      </div>
-      <div className="spdf-rate__track">
-        {segments.map((segment, index) =>
-          segment.value > 0 ? (
-            <span
-              key={index}
-              className={`spdf-rate__seg spdf-rate__seg--${segment.tone}`}
-              style={{ width: `${pct(segment.value, total)}%` }}
-            />
-          ) : null,
-        )}
-      </div>
-      <p className="spdf-rate__note">{note}</p>
-    </div>
   );
 }
 
@@ -182,38 +148,58 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
         </header>
 
         <div className="spdf-stack">
-          <PdfSection
-            title="Passes Under Pressure vs Not"
-            kpi={passTotal}
-            unit="Total passes"
-            footer={
-              <RateBar
-                label="Under pressure share"
-                value={pct(passesUnderPressure.underPressure, passTotal)}
-                note={`${passesUnderPressure.underPressure} of ${passTotal} under pressure`}
-                segments={[
-                  { value: passesUnderPressure.underPressure, tone: "warn" },
-                  { value: passesUnderPressure.notUnderPressure, tone: "blue" },
-                ]}
-              />
-            }
-          >
-            <StatTiles
-              items={[
-                {
-                  label: "Under pressure",
-                  value: passesUnderPressure.underPressure,
-                  tone: "warn",
-                  detail: `${pct(passesUnderPressure.underPressure, passTotal)}%`,
-                },
-                {
-                  label: "Not under pressure",
-                  value: passesUnderPressure.notUnderPressure,
-                  tone: "blue",
-                  detail: `${pct(passesUnderPressure.notUnderPressure, passTotal)}%`,
-                },
-              ]}
-            />
+          <section className="spdf-section spdf-section--build-up spdf-section--pressure">
+            <div className="spdf-section__top">
+              <p className="spdf-section__phase">Build-Up</p>
+              <h3 className="spdf-section__title">Passes Under Pressure vs Not</h3>
+            </div>
+            <div className="spdf-pressure">
+              <div className="spdf-pressure__total">
+                <span className="spdf-pressure__kicker">Total passes</span>
+                <span className="spdf-pressure__value">{passTotal}</span>
+                <span className="spdf-pressure__caption">Passes tracked in the match</span>
+              </div>
+              <div className="spdf-pressure__context">
+                <p className="spdf-pressure__kicker">Pressure context</p>
+                <p className="spdf-pressure__headline">
+                  {passesUnderPressure.underPressure} under pressure · {passesUnderPressure.notUnderPressure} not under
+                  pressure
+                </p>
+                <div className="spdf-pressure__track">
+                  <span
+                    className="spdf-pressure__seg spdf-pressure__seg--warn"
+                    style={{ width: `${pct(passesUnderPressure.underPressure, passTotal)}%` }}
+                  />
+                  <span
+                    className="spdf-pressure__seg spdf-pressure__seg--blue"
+                    style={{ width: `${pct(passesUnderPressure.notUnderPressure, passTotal)}%` }}
+                  />
+                </div>
+                <ul className="spdf-pressure__legend">
+                  <li>
+                    <span className="spdf-pressure__dot spdf-pressure__dot--warn" />
+                    <span>Under pressure</span>
+                    <strong>
+                      {passesUnderPressure.underPressure} · {pct(passesUnderPressure.underPressure, passTotal)}%
+                    </strong>
+                  </li>
+                  <li>
+                    <span className="spdf-pressure__dot spdf-pressure__dot--blue" />
+                    <span>Not under pressure</span>
+                    <strong>
+                      {passesUnderPressure.notUnderPressure} · {pct(passesUnderPressure.notUnderPressure, passTotal)}%
+                    </strong>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <PdfSection title="Pass Results" kpi={passTotal} unit="Passes" size="lg">
+            <div className="spdf-pass-row">
+              <PassResultPanel title="Under pressure" breakdown={passResults.underPressure} />
+              <PassResultPanel title="Not under pressure" breakdown={passResults.notUnderPressure} />
+            </div>
           </PdfSection>
 
           <PdfSection title="Possessions" kpi={possessions.total} unit="Total possessions">
@@ -234,7 +220,7 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
                 {
                   label: "Turnovers",
                   value: possessions.turnovers,
-                  tone: "blue",
+                  tone: "strong-red",
                   detail: `${pct(possessions.turnovers, possessions.total)}%`,
                   emphasizeDetail: true,
                 },
@@ -242,12 +228,6 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             />
           </PdfSection>
 
-          <PdfSection title="Pass Results" kpi={passTotal} unit="Passes" size="lg">
-            <div className="spdf-pass-row">
-              <PassResultPanel title="Under pressure" breakdown={passResults.underPressure} />
-              <PassResultPanel title="Not under pressure" breakdown={passResults.notUnderPressure} />
-            </div>
-          </PdfSection>
         </div>
 
         <footer className="spdf-foot">

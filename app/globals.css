@@ -462,14 +462,14 @@ body::before {
 }
 
 .metric-card--turnover {
-  border-color: color-mix(in srgb, var(--tone-accent) 35%, var(--line));
-  background: color-mix(in srgb, var(--sga-blue) 14%, var(--surface-sunken));
+  border-color: color-mix(in srgb, #e23b48 55%, var(--line));
+  background: color-mix(in srgb, #a1343c 28%, var(--surface-sunken));
 }
 
 .metric-card__pct--emphasis {
   font-size: 17px;
   font-weight: 800;
-  color: var(--tone-accent);
+  color: #ff6b74;
   letter-spacing: 0.02em;
 }
 

@@ -192,12 +192,141 @@
   min-height: 0;
 }
 
+.spdf-stack .spdf-section--pressure {
+  flex: 0.72 1 0;
+}
+
 .spdf-stack .spdf-section--md {
   flex: 0.9 1 0;
 }
 
 .spdf-stack .spdf-section--lg {
-  flex: 1.15 1 0;
+  flex: 1.2 1 0;
+}
+
+.spdf-pressure {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 8px;
+  min-height: 0;
+}
+
+.spdf-pressure__total {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 0.7 1 0;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d4e8f7;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.spdf-pressure__context {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1.5 1 0;
+  min-width: 0;
+  padding: 10px 12px 8px;
+  border: 1px solid #d4e8f7;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.spdf-pressure__kicker {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #297cc1;
+}
+
+.spdf-pressure__value {
+  margin-top: 2px;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 0.95;
+  color: #072334;
+}
+
+.spdf-pressure__caption {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b8192;
+}
+
+.spdf-pressure__headline {
+  margin: 3px 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #33495a;
+}
+
+.spdf-pressure__track {
+  display: flex;
+  gap: 2px;
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e3eaf0;
+}
+
+.spdf-pressure__seg {
+  height: 100%;
+}
+
+.spdf-pressure__seg--warn {
+  background: #e08a4f;
+}
+
+.spdf-pressure__seg--blue {
+  background: #297cc1;
+}
+
+.spdf-pressure__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 7px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spdf-pressure__legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #56697a;
+}
+
+.spdf-pressure__legend strong {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 800;
+  color: #072334;
+  white-space: nowrap;
+}
+
+.spdf-pressure__dot {
+  flex: 0 0 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.spdf-pressure__dot--warn {
+  background: #e08a4f;
+}
+
+.spdf-pressure__dot--blue {
+  background: #297cc1;
 }
 
 .spdf-section {
@@ -472,6 +601,21 @@
   color: #a1343c;
 }
 
+.spdf-stat__value--strong-red {
+  color: #c41616;
+}
+
+.spdf-stat--emphasis {
+  border-color: #c41616;
+  background: #fde8e8;
+}
+
+.spdf-stat__detail--emphasis {
+  font-size: 12px;
+  font-weight: 800;
+  color: #9b1010;
+}
+
 .spdf-stat__value--grey {
   color: #6b8192;
 }
@@ -490,17 +634,6 @@
 
 .spdf-stat__value--pass-lost {
   color: #b86b6b;
-}
-
-.spdf-stat--emphasis {
-  border-color: #297cc1;
-  background: #f0f6fc;
-}
-
-.spdf-stat__detail--emphasis {
-  font-size: 12px;
-  font-weight: 800;
-  color: #044f80;
 }
 
 .spdf-stat__label {
