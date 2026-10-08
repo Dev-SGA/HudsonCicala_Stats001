@@ -448,13 +448,17 @@ body::before {
 }
 
 .metric-flow--pressure .metric-card--compact {
-  flex: 0.72 1 0;
-  min-width: min(100%, 200px);
+  flex: 0.68 1 0;
+  min-width: min(100%, 180px);
 }
 
 .metric-flow--pressure .metric-card--major {
-  flex: 1.45 1 0;
-  min-width: min(100%, 280px);
+  flex: 1.52 1 0;
+  min-width: min(100%, 300px);
+}
+
+.metric-flow--pressure .metric-card--compact .metric-card__value {
+  font-size: 44px;
 }
 
 .metric-card--turnover {

@@ -29,6 +29,7 @@ function SplitMeter({
   primaryTone,
   secondaryTone,
   headline,
+  major,
 }: {
   title: string;
   primary: number;
@@ -38,12 +39,13 @@ function SplitMeter({
   primaryTone: BarTone;
   secondaryTone: BarTone;
   headline: string;
+  major?: boolean;
 }) {
   const total = primary + secondary;
   const primaryPct = percent(primary, total);
 
   return (
-    <div className="metric-card metric-card--compact">
+    <div className={`metric-card${major ? " metric-card--major" : " metric-card--compact"}`}>
       <h3 className="metric-card__title">{title}</h3>
       <p className="metric-card__headline">{headline}</p>
       <div className="meter" role="img" aria-label={`${primaryLabel}: ${primary}. ${secondaryLabel}: ${secondary}.`}>
@@ -150,6 +152,11 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
         <MetricFlow
           className="metric-flow--pressure"
           items={[
+            <div key="total" className="metric-card metric-card--hero metric-card--compact">
+              <h3 className="metric-card__title">Total passes</h3>
+              <span className="metric-card__value">{passesUnderPressure.total}</span>
+              <p className="metric-card__caption">Passes tracked in the match</p>
+            </div>,
             <SplitMeter
               key="split"
               title="Pressure context"
@@ -160,12 +167,8 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
               secondaryLabel="Not under pressure"
               primaryTone="warn"
               secondaryTone="accent"
+              major
             />,
-            <div key="total" className="metric-card metric-card--hero metric-card--major">
-              <h3 className="metric-card__title">Total passes</h3>
-              <span className="metric-card__value">{passesUnderPressure.total}</span>
-              <p className="metric-card__caption">Passes tracked in the match</p>
-            </div>,
           ]}
         />
       ),
