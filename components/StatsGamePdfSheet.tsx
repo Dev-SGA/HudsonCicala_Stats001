@@ -7,14 +7,7 @@ type StatsGamePdfSheetProps = {
   logoUrl: string;
 };
 
-type Phase = "build-up" | "defensive";
-
-type Tone = "blue" | "green" | "red" | "grey" | "warn" | "pass-progressive" | "pass-neutral" | "pass-lost";
-
-const PHASE_LABEL: Record<Phase, string> = {
-  "build-up": "Build-Up",
-  defensive: "Defensive Phase",
-};
+type Tone = "blue" | "red" | "warn" | "pass-progressive" | "pass-neutral" | "pass-lost";
 
 function pct(value: number, total: number): number {
   return total > 0 ? Math.round((value / total) * 100) : 0;
@@ -49,7 +42,7 @@ function RateBar({
   label: string;
   value: number;
   note: string;
-  segments: { value: number; tone: Tone }[];
+  segments: { value: number; tone: "warn" | "blue" }[];
 }) {
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
   return (
@@ -74,64 +67,85 @@ function RateBar({
   );
 }
 
-function PassResultAside({ title, breakdown }: { title: string; breakdown: PassResultBreakdown }) {
+function PassResultPanel({ title, breakdown }: { title: string; breakdown: PassResultBreakdown }) {
   const total = breakdown.progressive + breakdown.neutral + breakdown.lost;
+  const segments = [
+    { value: breakdown.progressive, tone: "pass-progressive" as const },
+    { value: breakdown.neutral, tone: "pass-neutral" as const },
+    { value: breakdown.lost, tone: "pass-lost" as const },
+  ];
+
   return (
-    <div className="spdf-pass-block">
-      <p className="spdf-pass-block__title">{title}</p>
-      <StatTiles
-        items={[
-          {
-            label: "Progressive",
-            value: breakdown.progressive,
-            tone: "pass-progressive",
-            detail: `${pct(breakdown.progressive, total)}%`,
-          },
-          {
-            label: "Neutral",
-            value: breakdown.neutral,
-            tone: "pass-neutral",
-            detail: `${pct(breakdown.neutral, total)}%`,
-          },
-          {
-            label: "Lost",
-            value: breakdown.lost,
-            tone: "pass-lost",
-            detail: `${pct(breakdown.lost, total)}%`,
-          },
-        ]}
-      />
+    <div className="spdf-pass-panel">
+      <div className="spdf-pass-panel__head">
+        <p className="spdf-pass-panel__title">{title}</p>
+        <span className="spdf-pass-panel__total">{total} passes</span>
+      </div>
+      <div className="spdf-pass-panel__track">
+        {segments.map((segment, index) =>
+          segment.value > 0 ? (
+            <span
+              key={index}
+              className={`spdf-pass-panel__seg spdf-pass-panel__seg--${segment.tone}`}
+              style={{ width: `${pct(segment.value, total)}%` }}
+            />
+          ) : null,
+        )}
+      </div>
+      <ul className="spdf-pass-panel__legend">
+        <li>
+          <span className="spdf-pass-panel__dot spdf-pass-panel__dot--pass-progressive" />
+          <span className="spdf-pass-panel__legend-label">Progressive</span>
+          <strong>
+            {breakdown.progressive} · {pct(breakdown.progressive, total)}%
+          </strong>
+        </li>
+        <li>
+          <span className="spdf-pass-panel__dot spdf-pass-panel__dot--pass-neutral" />
+          <span className="spdf-pass-panel__legend-label">Neutral</span>
+          <strong>
+            {breakdown.neutral} · {pct(breakdown.neutral, total)}%
+          </strong>
+        </li>
+        <li>
+          <span className="spdf-pass-panel__dot spdf-pass-panel__dot--pass-lost" />
+          <span className="spdf-pass-panel__legend-label">Lost</span>
+          <strong>
+            {breakdown.lost} · {pct(breakdown.lost, total)}%
+          </strong>
+        </li>
+      </ul>
     </div>
   );
 }
 
-function Section({
-  phase,
+function PdfSection({
   title,
-  value,
+  kpi,
   unit,
-  aside,
+  children,
   footer,
-  layout = "default",
+  size = "md",
 }: {
-  phase: Phase;
   title: string;
-  value: number;
+  kpi: number;
   unit: string;
-  aside: React.ReactNode;
+  children: React.ReactNode;
   footer?: React.ReactNode;
-  layout?: "default" | "wide";
+  size?: "md" | "lg";
 }) {
   return (
-    <section className={`spdf-section spdf-section--${phase}${layout === "wide" ? " spdf-section--wide" : ""}`}>
-      <p className="spdf-section__phase">{PHASE_LABEL[phase]}</p>
-      <h3 className="spdf-section__title">{title}</h3>
-      <div className="spdf-section__body">
+    <section className={`spdf-section spdf-section--build-up spdf-section--${size}`}>
+      <div className="spdf-section__top">
+        <p className="spdf-section__phase">Build-Up</p>
+        <h3 className="spdf-section__title">{title}</h3>
+      </div>
+      <div className="spdf-section__content">
         <div className="spdf-section__kpi">
-          <span className="spdf-section__value">{value}</span>
+          <span className="spdf-section__value">{kpi}</span>
           <span className="spdf-section__unit">{unit}</span>
         </div>
-        <div className="spdf-section__aside">{aside}</div>
+        <div className="spdf-section__panel">{children}</div>
       </div>
       {footer ? <div className="spdf-section__footer">{footer}</div> : null}
     </section>
@@ -141,6 +155,7 @@ function Section({
 export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfSheetProps) {
   const { player, meta, passesUnderPressure, passResults, possessions } = stats;
   const passTotal = passesUnderPressure.total;
+  const progressiveCombined = passResults.underPressure.progressive + passResults.notUnderPressure.progressive;
 
   return (
     <article className="stats-pdf" aria-hidden="true">
@@ -167,88 +182,73 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
           </div>
         </header>
 
-        <div className="spdf-grid spdf-grid--hudson">
-          <Section
-            phase="build-up"
-            title="Passes Under Pressure"
-            value={passTotal}
+        <div className="spdf-stack">
+          <PdfSection
+            title="Passes Under Pressure vs Not"
+            kpi={passTotal}
             unit="Total passes"
-            aside={
-              <StatTiles
-                items={[
-                  {
-                    label: "Under pressure",
-                    value: passesUnderPressure.underPressure,
-                    tone: "warn",
-                    detail: `${pct(passesUnderPressure.underPressure, passTotal)}%`,
-                  },
-                  {
-                    label: "Not under pressure",
-                    value: passesUnderPressure.notUnderPressure,
-                    tone: "blue",
-                    detail: `${pct(passesUnderPressure.notUnderPressure, passTotal)}%`,
-                  },
-                ]}
-              />
-            }
             footer={
               <RateBar
                 label="Under pressure share"
                 value={pct(passesUnderPressure.underPressure, passTotal)}
-                note={`${passesUnderPressure.underPressure} of ${passTotal} passes under pressure`}
+                note={`${passesUnderPressure.underPressure} of ${passTotal} under pressure`}
                 segments={[
                   { value: passesUnderPressure.underPressure, tone: "warn" },
                   { value: passesUnderPressure.notUnderPressure, tone: "blue" },
                 ]}
               />
             }
-          />
+          >
+            <StatTiles
+              items={[
+                {
+                  label: "Under pressure",
+                  value: passesUnderPressure.underPressure,
+                  tone: "warn",
+                  detail: `${pct(passesUnderPressure.underPressure, passTotal)}%`,
+                },
+                {
+                  label: "Not under pressure",
+                  value: passesUnderPressure.notUnderPressure,
+                  tone: "blue",
+                  detail: `${pct(passesUnderPressure.notUnderPressure, passTotal)}%`,
+                },
+              ]}
+            />
+          </PdfSection>
 
-          <Section
-            phase="build-up"
-            title="Possessions"
-            value={possessions.total}
-            unit="Total possessions"
-            aside={
-              <StatTiles
-                items={[
-                  {
-                    label: "Lost balls",
-                    value: possessions.lostBalls,
-                    tone: "red",
-                    detail: `${pct(possessions.lostBalls, possessions.total)}%`,
-                  },
-                  {
-                    label: "Wrong passes",
-                    value: possessions.wrongPasses,
-                    tone: "warn",
-                    detail: `${pct(possessions.wrongPasses, possessions.total)}%`,
-                  },
-                  {
-                    label: "Turnovers",
-                    value: possessions.turnovers,
-                    tone: "blue",
-                    detail: `${pct(possessions.turnovers, possessions.total)}%`,
-                    emphasizeDetail: true,
-                  },
-                ]}
-              />
-            }
-          />
+          <PdfSection title="Possessions" kpi={possessions.total} unit="Total possessions">
+            <StatTiles
+              items={[
+                {
+                  label: "Lost balls",
+                  value: possessions.lostBalls,
+                  tone: "red",
+                  detail: `${pct(possessions.lostBalls, possessions.total)}%`,
+                },
+                {
+                  label: "Wrong passes",
+                  value: possessions.wrongPasses,
+                  tone: "warn",
+                  detail: `${pct(possessions.wrongPasses, possessions.total)}%`,
+                },
+                {
+                  label: "Turnovers",
+                  value: possessions.turnovers,
+                  tone: "blue",
+                  detail: `${pct(possessions.turnovers, possessions.total)}%`,
+                  emphasizeDetail: true,
+                },
+              ]}
+            />
+          </PdfSection>
 
-          <Section
-            phase="build-up"
-            title="Pass Results"
-            value={passResults.underPressure.progressive + passResults.notUnderPressure.progressive}
-            unit="Progressive (combined)"
-            layout="wide"
-            aside={
-              <>
-                <PassResultAside title="Under pressure" breakdown={passResults.underPressure} />
-                <PassResultAside title="Not under pressure" breakdown={passResults.notUnderPressure} />
-              </>
-            }
-          />
+          <PdfSection title="Pass Results" kpi={progressiveCombined} unit="Progressive (combined)" size="lg">
+            <div className="spdf-pass-row">
+              <PassResultPanel title="Under pressure" breakdown={passResults.underPressure} />
+              <PassResultPanel title="Not under pressure" breakdown={passResults.notUnderPressure} />
+            </div>
+          </PdfSection>
         </div>
 
         <footer className="spdf-foot">
