@@ -112,6 +112,7 @@ function Section({
   unit,
   aside,
   footer,
+  layout = "default",
 }: {
   phase: Phase;
   title: string;
@@ -119,9 +120,10 @@ function Section({
   unit: string;
   aside: React.ReactNode;
   footer?: React.ReactNode;
+  layout?: "default" | "wide";
 }) {
   return (
-    <section className={`spdf-section spdf-section--${phase}`}>
+    <section className={`spdf-section spdf-section--${phase}${layout === "wide" ? " spdf-section--wide" : ""}`}>
       <p className="spdf-section__phase">{PHASE_LABEL[phase]}</p>
       <h3 className="spdf-section__title">{title}</h3>
       <div className="spdf-section__body">
@@ -165,10 +167,10 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
           </div>
         </header>
 
-        <div className="spdf-grid">
+        <div className="spdf-grid spdf-grid--hudson">
           <Section
             phase="build-up"
-            title="Passes Under Pressure vs Not"
+            title="Passes Under Pressure"
             value={passTotal}
             unit="Total passes"
             aside={
@@ -178,13 +180,13 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
                     label: "Under pressure",
                     value: passesUnderPressure.underPressure,
                     tone: "warn",
-                    detail: `${pct(passesUnderPressure.underPressure, passTotal)}% of passes`,
+                    detail: `${pct(passesUnderPressure.underPressure, passTotal)}%`,
                   },
                   {
                     label: "Not under pressure",
                     value: passesUnderPressure.notUnderPressure,
                     tone: "blue",
-                    detail: `${pct(passesUnderPressure.notUnderPressure, passTotal)}% of passes`,
+                    detail: `${pct(passesUnderPressure.notUnderPressure, passTotal)}%`,
                   },
                 ]}
               />
@@ -199,19 +201,6 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
                   { value: passesUnderPressure.notUnderPressure, tone: "blue" },
                 ]}
               />
-            }
-          />
-
-          <Section
-            phase="build-up"
-            title="Pass Results"
-            value={passResults.underPressure.progressive + passResults.notUnderPressure.progressive}
-            unit="Progressive plays (combined)"
-            aside={
-              <>
-                <PassResultAside title="Under pressure" breakdown={passResults.underPressure} />
-                <PassResultAside title="Not under pressure" breakdown={passResults.notUnderPressure} />
-              </>
             }
           />
 
@@ -244,6 +233,20 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
                   },
                 ]}
               />
+            }
+          />
+
+          <Section
+            phase="build-up"
+            title="Pass Results"
+            value={passResults.underPressure.progressive + passResults.notUnderPressure.progressive}
+            unit="Progressive (combined)"
+            layout="wide"
+            aside={
+              <>
+                <PassResultAside title="Under pressure" breakdown={passResults.underPressure} />
+                <PassResultAside title="Not under pressure" breakdown={passResults.notUnderPressure} />
+              </>
             }
           />
         </div>
