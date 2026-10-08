@@ -16,6 +16,22 @@ type GameStatsReportProps = {
 
 type BarTone = "accent" | "positive" | "negative" | "muted" | "warn";
 
+const PASS_PLAY_TIPS = {
+  progressive:
+    "Progressive Play — Finding a teammate with a clear opportunity to progress the ball, create a scoring opportunity, or a pass that break defensive lines.",
+  neutral:
+    "Neutral Play — Finding a teammate without a clear opportunity to progress the ball, but with a clear option to maintain possession.",
+  lost: "Lost Play — Losing possession through an inaccurate pass or finding a teammate who is immediately under pressure and at high risk of losing possession.",
+} as const;
+
+function PassPlayTip({ label, tip }: { label: string; tip: string }) {
+  return (
+    <button type="button" className="pass-play-tip legend__label" data-tip={tip} aria-label={`${label}. ${tip}`}>
+      <span className="pass-play-tip__label">{label}</span>
+    </button>
+  );
+}
+
 function percent(value: number, total: number): number {
   return total > 0 ? Math.round((value / total) * 100) : 0;
 }
@@ -94,21 +110,21 @@ function PassResultsMeter({ title, breakdown }: { title: string; breakdown: Pass
       <ul className="legend">
         <li>
           <span className="legend__dot legend__dot--pass-progressive" />
-          <span className="legend__label">Progressive plays</span>
+          <PassPlayTip label="Progressive plays" tip={PASS_PLAY_TIPS.progressive} />
           <strong>
             {breakdown.progressive} · {progressivePct}%
           </strong>
         </li>
         <li>
           <span className="legend__dot legend__dot--pass-neutral" />
-          <span className="legend__label">Neutral plays</span>
+          <PassPlayTip label="Neutral plays" tip={PASS_PLAY_TIPS.neutral} />
           <strong>
             {breakdown.neutral} · {neutralPct}%
           </strong>
         </li>
         <li>
           <span className="legend__dot legend__dot--pass-lost" />
-          <span className="legend__label">Lost plays</span>
+          <PassPlayTip label="Lost plays" tip={PASS_PLAY_TIPS.lost} />
           <strong>
             {breakdown.lost} · {lostPct}%
           </strong>
