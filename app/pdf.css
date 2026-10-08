@@ -128,8 +128,9 @@
 .spdf-side__slogan {
   margin: auto 0 0;
   font-family: "Good Times", "Source Sans 3", sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.2em;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
   text-transform: uppercase;
   color: #6fa8d8;
 }
@@ -219,10 +220,10 @@
 }
 
 .spdf-section__phase {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
@@ -243,9 +244,10 @@
 
 .spdf-section__title {
   margin: 0;
-  font-size: 11px;
+  max-width: 100%;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -260,7 +262,7 @@
 
 .spdf-section__content {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 12px;
   margin-top: 8px;
   flex: 1 1 auto;
@@ -304,6 +306,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-self: center;
 }
 
 .spdf-section__footer {
@@ -315,8 +318,7 @@
 .spdf-pass-row {
   display: flex;
   gap: 10px;
-  flex: 1 1 auto;
-  min-height: 0;
+  align-items: stretch;
 }
 
 .spdf-pass-panel {
@@ -324,8 +326,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 8px;
+  padding: 10px 12px 8px;
   border: 1px solid #d4e8f7;
   border-radius: 6px;
   background: #ffffff;
@@ -380,28 +382,25 @@
 }
 
 .spdf-pass-panel__legend {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .spdf-pass-panel__legend li {
-  display: grid;
-  grid-template-columns: 6px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  column-gap: 4px;
-  row-gap: 1px;
+  display: flex;
   align-items: center;
+  gap: 6px;
   min-width: 0;
 }
 
 .spdf-pass-panel__dot {
-  grid-row: 1 / span 2;
-  width: 6px;
-  height: 6px;
+  flex: 0 0 7px;
+  width: 7px;
+  height: 7px;
   border-radius: 999px;
 }
 
@@ -418,29 +417,29 @@
 }
 
 .spdf-pass-panel__legend-label {
-  font-size: 7px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  line-height: 1.15;
+  line-height: 1.2;
   color: #6b8192;
-  overflow-wrap: anywhere;
 }
 
 .spdf-pass-panel__legend strong {
-  font-size: 9px;
+  margin-left: auto;
+  font-size: 11px;
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.15;
   color: #072334;
+  white-space: nowrap;
 }
 
 .spdf-stats {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
-  height: 100%;
 }
 
 .spdf-stat {
@@ -448,15 +447,14 @@
   flex-direction: column;
   flex: 1 1 0;
   min-width: 0;
-  padding: 6px 7px 5px;
+  padding: 10px 12px 9px;
   border: 1px solid #dde3e8;
   border-radius: 6px;
   background: #ffffff;
-  overflow: hidden;
 }
 
 .spdf-stat__value {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   line-height: 1;
   color: #072334;
@@ -506,23 +504,21 @@
 }
 
 .spdf-stat__label {
-  margin-top: 4px;
-  font-size: 8px;
+  margin-top: 6px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  line-height: 1.2;
+  line-height: 1.25;
   text-transform: uppercase;
-  white-space: normal;
-  overflow-wrap: anywhere;
   color: #6b8192;
 }
 
 .spdf-stat__detail {
   margin-top: 2px;
-  font-size: 9px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.2;
-  color: #8a9dab;
+  color: #6b8192;
 }
 
 .spdf-highlight {

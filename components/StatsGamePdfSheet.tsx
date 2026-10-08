@@ -155,7 +155,6 @@ function PdfSection({
 export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfSheetProps) {
   const { player, meta, passesUnderPressure, passResults, possessions } = stats;
   const passTotal = passesUnderPressure.total;
-  const progressiveCombined = passResults.underPressure.progressive + passResults.notUnderPressure.progressive;
 
   return (
     <article className="stats-pdf" aria-hidden="true">
@@ -243,7 +242,7 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             />
           </PdfSection>
 
-          <PdfSection title="Pass Results" kpi={progressiveCombined} unit="Progressive (combined)" size="lg">
+          <PdfSection title="Pass Results" kpi={passTotal} unit="Passes" size="lg">
             <div className="spdf-pass-row">
               <PassResultPanel title="Under pressure" breakdown={passResults.underPressure} />
               <PassResultPanel title="Not under pressure" breakdown={passResults.notUnderPressure} />
