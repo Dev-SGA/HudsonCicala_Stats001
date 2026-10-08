@@ -1,0 +1,308 @@
+import { BRAND } from "@/lib/brand";
+import type { GameStats, PassResultBreakdown } from "@/lib/stats";
+
+type StatsGamePdfSheetProps = {
+  stats: GameStats;
+  photoUrl: string;
+  logoUrl: string;
+};
+
+type Phase = "build-up" | "defensive";
+
+type Tone = "blue" | "green" | "red" | "grey" | "warn";
+
+const PHASE_LABEL: Record<Phase, string> = {
+  "build-up": "Build-Up",
+  defensive: "Defensive Phase",
+};
+
+function pct(value: number, total: number): number {
+  return total > 0 ? Math.round((value / total) * 100) : 0;
+}
+
+function linkHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url.length > 48 ? `${url.slice(0, 45)}…` : url;
+  }
+}
+
+function StatTiles({ items }: { items: { label: string; value: number; tone?: Tone; detail?: string }[] }) {
+  return (
+    <ul className="spdf-stats">
+      {items.map((item) => (
+        <li key={item.label} className="spdf-stat">
+          <span className={`spdf-stat__value${item.tone ? ` spdf-stat__value--${item.tone}` : ""}`}>{item.value}</span>
+          <span className="spdf-stat__label">{item.label}</span>
+          {item.detail ? <span className="spdf-stat__detail">{item.detail}</span> : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function RateBar({
+  label,
+  value,
+  note,
+  segments,
+}: {
+  label: string;
+  value: number;
+  note: string;
+  segments: { value: number; tone: Tone }[];
+}) {
+  const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+  return (
+    <div className="spdf-rate">
+      <div className="spdf-rate__head">
+        <span className="spdf-rate__label">{label}</span>
+        <span className="spdf-rate__value">{value}%</span>
+      </div>
+      <div className="spdf-rate__track">
+        {segments.map((segment, index) =>
+          segment.value > 0 ? (
+            <span
+              key={index}
+              className={`spdf-rate__seg spdf-rate__seg--${segment.tone}`}
+              style={{ width: `${pct(segment.value, total)}%` }}
+            />
+          ) : null,
+        )}
+      </div>
+      <p className="spdf-rate__note">{note}</p>
+    </div>
+  );
+}
+
+function PassResultAside({ title, breakdown }: { title: string; breakdown: PassResultBreakdown }) {
+  const total = breakdown.progressive + breakdown.neutral + breakdown.lost;
+  return (
+    <div className="spdf-pass-block">
+      <p className="spdf-pass-block__title">{title}</p>
+      <StatTiles
+        items={[
+          {
+            label: "Progressive",
+            value: breakdown.progressive,
+            tone: "green",
+            detail: `${pct(breakdown.progressive, total)}%`,
+          },
+          {
+            label: "Neutral",
+            value: breakdown.neutral,
+            tone: "blue",
+            detail: `${pct(breakdown.neutral, total)}%`,
+          },
+          {
+            label: "Lost",
+            value: breakdown.lost,
+            tone: "red",
+            detail: `${pct(breakdown.lost, total)}%`,
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
+function Section({
+  phase,
+  title,
+  value,
+  unit,
+  aside,
+  footer,
+}: {
+  phase: Phase;
+  title: string;
+  value: number;
+  unit: string;
+  aside: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  return (
+    <section className={`spdf-section spdf-section--${phase}`}>
+      <p className="spdf-section__phase">{PHASE_LABEL[phase]}</p>
+      <h3 className="spdf-section__title">{title}</h3>
+      <div className="spdf-section__body">
+        <div className="spdf-section__kpi">
+          <span className="spdf-section__value">{value}</span>
+          <span className="spdf-section__unit">{unit}</span>
+        </div>
+        <div className="spdf-section__aside">{aside}</div>
+      </div>
+      {footer ? <div className="spdf-section__footer">{footer}</div> : null}
+    </section>
+  );
+}
+
+function PdfVideoLinks({
+  passesUnderPressureLink,
+  passResultsLink,
+  possessionsLink,
+}: {
+  passesUnderPressureLink: string;
+  passResultsLink: string;
+  possessionsLink: string;
+}) {
+  const rows = [
+    { label: "Passes under pressure", url: passesUnderPressureLink.trim() },
+    { label: "Pass results", url: passResultsLink.trim() },
+    { label: "Possessions", url: possessionsLink.trim() },
+  ];
+
+  return (
+    <section className="spdf-videos" aria-label="Video clips">
+      <h4 className="spdf-videos__title">Video clips</h4>
+      <ul className="spdf-videos__list">
+        {rows.map((row) => (
+          <li key={row.label}>
+            {row.url ? (
+              <a className="spdf-videos__link" href={row.url} data-pdf-link={row.url}>
+                <span className="spdf-videos__play" aria-hidden="true">
+                  ▶
+                </span>
+                <span className="spdf-videos__text">
+                  <strong>{row.label}</strong>
+                  <span>{linkHost(row.url)}</span>
+                </span>
+              </a>
+            ) : (
+              <span className="spdf-videos__empty">{row.label} — pending</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfSheetProps) {
+  const { player, meta, passesUnderPressure, passResults, possessions } = stats;
+  const passTotal = passesUnderPressure.total;
+
+  return (
+    <article className="stats-pdf" aria-hidden="true">
+      <aside className="spdf-side">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoUrl} alt="" className="spdf-side__logo" />
+        <div className="spdf-side__photo" data-pdf-bg={photoUrl} style={{ backgroundImage: `url(${photoUrl})` }} />
+        <div className="spdf-side__identity">
+          <p className="spdf-side__label">Athlete</p>
+          <h2 className="spdf-side__name">{player.name}</h2>
+          <p className="spdf-side__club">{player.club}</p>
+        </div>
+        <p className="spdf-side__slogan">{BRAND.slogan}</p>
+      </aside>
+
+      <div className="spdf-main">
+        <header className="spdf-head">
+          <div>
+            <p className="spdf-head__eyebrow">{BRAND.legal}</p>
+            <h1 className="spdf-head__title">{meta.title}</h1>
+          </div>
+          <div className="spdf-head__meta">
+            <span>{meta.subtitle}</span>
+          </div>
+        </header>
+
+        <div className="spdf-grid">
+          <Section
+            phase="build-up"
+            title="Passes Under Pressure vs Not"
+            value={passTotal}
+            unit="Total passes"
+            aside={
+              <StatTiles
+                items={[
+                  {
+                    label: "Under pressure",
+                    value: passesUnderPressure.underPressure,
+                    tone: "warn",
+                    detail: `${pct(passesUnderPressure.underPressure, passTotal)}% of passes`,
+                  },
+                  {
+                    label: "Not under pressure",
+                    value: passesUnderPressure.notUnderPressure,
+                    tone: "blue",
+                    detail: `${pct(passesUnderPressure.notUnderPressure, passTotal)}% of passes`,
+                  },
+                ]}
+              />
+            }
+            footer={
+              <RateBar
+                label="Under pressure share"
+                value={pct(passesUnderPressure.underPressure, passTotal)}
+                note={`${passesUnderPressure.underPressure} of ${passTotal} passes under pressure`}
+                segments={[
+                  { value: passesUnderPressure.underPressure, tone: "warn" },
+                  { value: passesUnderPressure.notUnderPressure, tone: "blue" },
+                ]}
+              />
+            }
+          />
+
+          <Section
+            phase="build-up"
+            title="Pass Results"
+            value={passResults.underPressure.progressive + passResults.notUnderPressure.progressive}
+            unit="Progressive plays (combined)"
+            aside={
+              <>
+                <PassResultAside title="Under pressure" breakdown={passResults.underPressure} />
+                <PassResultAside title="Not under pressure" breakdown={passResults.notUnderPressure} />
+              </>
+            }
+          />
+
+          <Section
+            phase="build-up"
+            title="Possessions"
+            value={possessions.total}
+            unit="Total possessions"
+            aside={
+              <StatTiles
+                items={[
+                  {
+                    label: "Lost balls",
+                    value: possessions.lostBalls,
+                    tone: "red",
+                    detail: `${pct(possessions.lostBalls, possessions.total)}%`,
+                  },
+                  {
+                    label: "Wrong passes",
+                    value: possessions.wrongPasses,
+                    tone: "warn",
+                    detail: `${pct(possessions.wrongPasses, possessions.total)}%`,
+                  },
+                  {
+                    label: "Turnovers",
+                    value: possessions.turnovers,
+                    tone: "grey",
+                    detail: `${pct(possessions.turnovers, possessions.total)}%`,
+                  },
+                ]}
+              />
+            }
+          />
+        </div>
+
+        <PdfVideoLinks
+          passesUnderPressureLink={passesUnderPressure.videoLink}
+          passResultsLink={passResults.videoLink}
+          possessionsLink={possessions.videoLink}
+        />
+
+        <footer className="spdf-foot">
+          <span>{BRAND.name}</span>
+          <span>
+            {player.name} · {meta.title}
+          </span>
+        </footer>
+      </div>
+    </article>
+  );
+}
