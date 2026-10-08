@@ -15,6 +15,9 @@
   --tone-negative: #e0616b;
   --tone-warn: #e08a4f;
   --tone-muted: color-mix(in srgb, var(--sga-white) 26%, var(--sga-navy));
+  --tone-pass-progressive: #4d8f6e;
+  --tone-pass-neutral: #b4bcc6;
+  --tone-pass-lost: #b86b6b;
 
   --bg: var(--sga-navy);
   --bg-deep: color-mix(in srgb, var(--sga-navy) 72%, #000000);
@@ -444,6 +447,28 @@ body::before {
   flex-direction: column;
 }
 
+.metric-flow--pressure .metric-card--compact {
+  flex: 0.72 1 0;
+  min-width: min(100%, 200px);
+}
+
+.metric-flow--pressure .metric-card--major {
+  flex: 1.45 1 0;
+  min-width: min(100%, 280px);
+}
+
+.metric-card--turnover {
+  border-color: color-mix(in srgb, var(--tone-accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--sga-blue) 14%, var(--surface-sunken));
+}
+
+.metric-card__pct--emphasis {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--tone-accent);
+  letter-spacing: 0.02em;
+}
+
 .metric-card__title {
   margin: 0 0 14px;
   font-size: 15px;
@@ -582,9 +607,19 @@ body::before {
   background: var(--tone-warn);
 }
 
-.meter--thin {
-  height: 8px;
-  margin-top: 10px;
+.meter__seg--pass-progressive,
+.legend__dot--pass-progressive {
+  background: var(--tone-pass-progressive);
+}
+
+.meter__seg--pass-neutral,
+.legend__dot--pass-neutral {
+  background: var(--tone-pass-neutral);
+}
+
+.meter__seg--pass-lost,
+.legend__dot--pass-lost {
+  background: var(--tone-pass-lost);
 }
 
 .legend {

@@ -2,7 +2,6 @@
 
 import { AthleteProfileCard } from "@/components/AthleteProfileCard";
 import { ExportPdfButton } from "@/components/ExportPdfButton";
-import { ClipLinks } from "@/components/ClipLinks";
 import { VideoLinksProvider } from "@/components/VideoLinksContext";
 import { MetricFlow } from "@/components/MetricFlow";
 import { SgaBrand } from "@/components/SgaBrand";
@@ -44,7 +43,7 @@ function SplitMeter({
   const primaryPct = percent(primary, total);
 
   return (
-    <div className="metric-card">
+    <div className="metric-card metric-card--compact">
       <h3 className="metric-card__title">{title}</h3>
       <p className="metric-card__headline">{headline}</p>
       <div className="meter" role="img" aria-label={`${primaryLabel}: ${primary}. ${secondaryLabel}: ${secondary}.`}>
@@ -86,27 +85,27 @@ function PassResultsMeter({ title, breakdown }: { title: string; breakdown: Pass
         role="img"
         aria-label={`Progressive: ${breakdown.progressive}. Neutral: ${breakdown.neutral}. Lost: ${breakdown.lost}.`}
       >
-        <span className="meter__seg meter__seg--positive" style={{ width: `${progressivePct}%` }} />
-        <span className="meter__seg meter__seg--accent" style={{ width: `${neutralPct}%` }} />
-        <span className="meter__seg meter__seg--negative" style={{ width: `${lostPct}%` }} />
+        <span className="meter__seg meter__seg--pass-progressive" style={{ width: `${progressivePct}%` }} />
+        <span className="meter__seg meter__seg--pass-neutral" style={{ width: `${neutralPct}%` }} />
+        <span className="meter__seg meter__seg--pass-lost" style={{ width: `${lostPct}%` }} />
       </div>
       <ul className="legend">
         <li>
-          <span className="legend__dot legend__dot--positive" />
+          <span className="legend__dot legend__dot--pass-progressive" />
           <span className="legend__label">Progressive plays</span>
           <strong>
             {breakdown.progressive} · {progressivePct}%
           </strong>
         </li>
         <li>
-          <span className="legend__dot legend__dot--accent" />
+          <span className="legend__dot legend__dot--pass-neutral" />
           <span className="legend__label">Neutral plays</span>
           <strong>
             {breakdown.neutral} · {neutralPct}%
           </strong>
         </li>
         <li>
-          <span className="legend__dot legend__dot--negative" />
+          <span className="legend__dot legend__dot--pass-lost" />
           <span className="legend__label">Lost plays</span>
           <strong>
             {breakdown.lost} · {lostPct}%
@@ -121,21 +120,20 @@ function PossessionStat({
   label,
   value,
   total,
-  tone,
+  emphasizePct,
 }: {
   label: string;
   value: number;
   total: number;
-  tone: BarTone;
+  emphasizePct?: boolean;
 }) {
+  const pctLabel = `${percent(value, total)}% of possessions`;
+
   return (
-    <div className="metric-card">
+    <div className={`metric-card${emphasizePct ? " metric-card--turnover" : ""}`}>
       <h3 className="metric-card__title">{label}</h3>
       <span className="metric-card__value">{value}</span>
-      <span className="metric-card__pct">{percent(value, total)}% of possessions</span>
-      <div className="meter meter--thin" role="presentation">
-        <span className={`meter__seg meter__seg--${tone}`} style={{ width: `${percent(value, total)}%` }} />
-      </div>
+      <span className={`metric-card__pct${emphasizePct ? " metric-card__pct--emphasis" : ""}`}>{pctLabel}</span>
     </div>
   );
 }
@@ -149,29 +147,27 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
       title: "Passes Under Pressure vs Not",
       phase: "build-up",
       content: (
-        <>
-          <MetricFlow
-            items={[
-              <div key="total" className="metric-card metric-card--hero">
-                <h3 className="metric-card__title">Total passes</h3>
-                <span className="metric-card__value">{passesUnderPressure.total}</span>
-                <p className="metric-card__caption">Passes tracked in the match</p>
-              </div>,
-              <SplitMeter
-                key="split"
-                title="Pressure context"
-                headline={`${passesUnderPressure.underPressure} under pressure · ${passesUnderPressure.notUnderPressure} not under pressure`}
-                primary={passesUnderPressure.underPressure}
-                secondary={passesUnderPressure.notUnderPressure}
-                primaryLabel="Under pressure"
-                secondaryLabel="Not under pressure"
-                primaryTone="warn"
-                secondaryTone="accent"
-              />,
-            ]}
-          />
-          <ClipLinks scope="passesPressure" />
-        </>
+        <MetricFlow
+          className="metric-flow--pressure"
+          items={[
+            <SplitMeter
+              key="split"
+              title="Pressure context"
+              headline={`${passesUnderPressure.underPressure} under pressure · ${passesUnderPressure.notUnderPressure} not under pressure`}
+              primary={passesUnderPressure.underPressure}
+              secondary={passesUnderPressure.notUnderPressure}
+              primaryLabel="Under pressure"
+              secondaryLabel="Not under pressure"
+              primaryTone="warn"
+              secondaryTone="accent"
+            />,
+            <div key="total" className="metric-card metric-card--hero metric-card--major">
+              <h3 className="metric-card__title">Total passes</h3>
+              <span className="metric-card__value">{passesUnderPressure.total}</span>
+              <p className="metric-card__caption">Passes tracked in the match</p>
+            </div>,
+          ]}
+        />
       ),
     },
     {
@@ -179,15 +175,12 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
       title: "Pass Results",
       phase: "build-up",
       content: (
-        <>
-          <MetricFlow
-            items={[
-              <PassResultsMeter key="up" title="Under pressure" breakdown={passResults.underPressure} />,
-              <PassResultsMeter key="nop" title="Not under pressure" breakdown={passResults.notUnderPressure} />,
-            ]}
-          />
-          <ClipLinks scope="passResults" />
-        </>
+        <MetricFlow
+          items={[
+            <PassResultsMeter key="up" title="Under pressure" breakdown={passResults.underPressure} />,
+            <PassResultsMeter key="nop" title="Not under pressure" breakdown={passResults.notUnderPressure} />,
+          ]}
+        />
       ),
     },
     {
@@ -203,18 +196,17 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
           </div>
           <MetricFlow
             items={[
-              <PossessionStat key="lb" label="Lost balls" value={possessions.lostBalls} total={possessions.total} tone="negative" />,
+              <PossessionStat key="lb" label="Lost balls" value={possessions.lostBalls} total={possessions.total} />,
+              <PossessionStat key="wp" label="Wrong passes" value={possessions.wrongPasses} total={possessions.total} />,
               <PossessionStat
-                key="wp"
-                label="Wrong passes"
-                value={possessions.wrongPasses}
+                key="to"
+                label="Turnovers"
+                value={possessions.turnovers}
                 total={possessions.total}
-                tone="warn"
+                emphasizePct
               />,
-              <PossessionStat key="to" label="Turnovers" value={possessions.turnovers} total={possessions.total} tone="muted" />,
             ]}
           />
-          <ClipLinks scope="possessions" />
         </>
       ),
     },

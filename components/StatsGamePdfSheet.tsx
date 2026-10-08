@@ -9,7 +9,7 @@ type StatsGamePdfSheetProps = {
 
 type Phase = "build-up" | "defensive";
 
-type Tone = "blue" | "green" | "red" | "grey" | "warn";
+type Tone = "blue" | "green" | "red" | "grey" | "warn" | "pass-progressive" | "pass-neutral" | "pass-lost";
 
 const PHASE_LABEL: Record<Phase, string> = {
   "build-up": "Build-Up",
@@ -20,22 +20,20 @@ function pct(value: number, total: number): number {
   return total > 0 ? Math.round((value / total) * 100) : 0;
 }
 
-function linkHost(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url.length > 48 ? `${url.slice(0, 45)}…` : url;
-  }
-}
-
-function StatTiles({ items }: { items: { label: string; value: number; tone?: Tone; detail?: string }[] }) {
+function StatTiles({
+  items,
+}: {
+  items: { label: string; value: number; tone?: Tone; detail?: string; emphasizeDetail?: boolean }[];
+}) {
   return (
     <ul className="spdf-stats">
       {items.map((item) => (
-        <li key={item.label} className="spdf-stat">
+        <li key={item.label} className={`spdf-stat${item.emphasizeDetail ? " spdf-stat--emphasis" : ""}`}>
           <span className={`spdf-stat__value${item.tone ? ` spdf-stat__value--${item.tone}` : ""}`}>{item.value}</span>
           <span className="spdf-stat__label">{item.label}</span>
-          {item.detail ? <span className="spdf-stat__detail">{item.detail}</span> : null}
+          {item.detail ? (
+            <span className={`spdf-stat__detail${item.emphasizeDetail ? " spdf-stat__detail--emphasis" : ""}`}>{item.detail}</span>
+          ) : null}
         </li>
       ))}
     </ul>
@@ -86,19 +84,19 @@ function PassResultAside({ title, breakdown }: { title: string; breakdown: PassR
           {
             label: "Progressive",
             value: breakdown.progressive,
-            tone: "green",
+            tone: "pass-progressive",
             detail: `${pct(breakdown.progressive, total)}%`,
           },
           {
             label: "Neutral",
             value: breakdown.neutral,
-            tone: "blue",
+            tone: "pass-neutral",
             detail: `${pct(breakdown.neutral, total)}%`,
           },
           {
             label: "Lost",
             value: breakdown.lost,
-            tone: "red",
+            tone: "pass-lost",
             detail: `${pct(breakdown.lost, total)}%`,
           },
         ]}
@@ -134,47 +132,6 @@ function Section({
         <div className="spdf-section__aside">{aside}</div>
       </div>
       {footer ? <div className="spdf-section__footer">{footer}</div> : null}
-    </section>
-  );
-}
-
-function PdfVideoLinks({
-  passesUnderPressureLink,
-  passResultsLink,
-  possessionsLink,
-}: {
-  passesUnderPressureLink: string;
-  passResultsLink: string;
-  possessionsLink: string;
-}) {
-  const rows = [
-    { label: "Passes under pressure", url: passesUnderPressureLink.trim() },
-    { label: "Pass results", url: passResultsLink.trim() },
-    { label: "Possessions", url: possessionsLink.trim() },
-  ];
-
-  return (
-    <section className="spdf-videos" aria-label="Video clips">
-      <h4 className="spdf-videos__title">Video clips</h4>
-      <ul className="spdf-videos__list">
-        {rows.map((row) => (
-          <li key={row.label}>
-            {row.url ? (
-              <a className="spdf-videos__link" href={row.url} data-pdf-link={row.url}>
-                <span className="spdf-videos__play" aria-hidden="true">
-                  ▶
-                </span>
-                <span className="spdf-videos__text">
-                  <strong>{row.label}</strong>
-                  <span>{linkHost(row.url)}</span>
-                </span>
-              </a>
-            ) : (
-              <span className="spdf-videos__empty">{row.label} — pending</span>
-            )}
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
@@ -281,20 +238,15 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
                   {
                     label: "Turnovers",
                     value: possessions.turnovers,
-                    tone: "grey",
+                    tone: "blue",
                     detail: `${pct(possessions.turnovers, possessions.total)}%`,
+                    emphasizeDetail: true,
                   },
                 ]}
               />
             }
           />
         </div>
-
-        <PdfVideoLinks
-          passesUnderPressureLink={passesUnderPressure.videoLink}
-          passResultsLink={passResults.videoLink}
-          possessionsLink={possessions.videoLink}
-        />
 
         <footer className="spdf-foot">
           <span>{BRAND.name}</span>

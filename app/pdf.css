@@ -330,6 +330,29 @@
   color: #ad5129;
 }
 
+.spdf-stat__value--pass-progressive {
+  color: #4d8f6e;
+}
+
+.spdf-stat__value--pass-neutral {
+  color: #8a96a3;
+}
+
+.spdf-stat__value--pass-lost {
+  color: #b86b6b;
+}
+
+.spdf-stat--emphasis {
+  border-color: #297cc1;
+  background: #f0f6fc;
+}
+
+.spdf-stat__detail--emphasis {
+  font-size: 12px;
+  font-weight: 800;
+  color: #044f80;
+}
+
 .spdf-pass-block + .spdf-pass-block {
   margin-top: 10px;
 }
